@@ -1,0 +1,31 @@
+# algorithmic_python_synthesizer
+Many algorithms to choose from, select a midi number, length, and synthesis algorithm of your choice. 
+
+Full list of working algorithms:
+
+    "atr": antitriangle,
+    "cir": circular,
+    "tan": tangent,
+    "cot": cotangent,
+    "wir": weierstrass,
+    "esin": esin,
+    "sin": sine,
+    "tri": triangle,
+    "saw": sawtooth,
+    "sqr": square,
+    "pls": pulse,
+    "semi": semicircle,
+    "nsin": nestedsine,
+    "clx": clx,
+    "slx": slx,
+    "msaw": msaw,
+    "skew": skewer,
+    "gsin": gaussiansine,
+    "lsin": logsin,
+    "art": artifact,
+    "osin": orderedsine,
+    "alog": antilogarithm,
+    "erfs": errorsine,
+    "tetra": tetration,
+    "decr": decreasingfrequency,
+    "rsaw": randomsaw,
