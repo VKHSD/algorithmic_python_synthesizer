@@ -19,7 +19,7 @@ sample_data = []
 
 def percent(iteration):
     if iteration % round(sampleLength / 10) == 0.0:
-        return print(round((iteration / (sampleLength * sampleTime)) * 100), "% done...")
+        return print(round((iteration / (sampleLength * sampleTime)) * 100, 3), "% done...")
 
 
 def floor(x):
@@ -177,8 +177,9 @@ def decreasingfrequency(t, n):
 
 
 def randomsaw(t, n):
-    return (-(2 / pi)) * ((((-1) ** n) / n) * (sin(((erf(.5+np.random.ranf(1)))+.1) * (n * t))))
+    return (-(2 / pi)) * ((((-1) ** n) / n) * (sin((1+(((erf(.5 + np.random.ranf(1))) + .1)/(10**order))) * (n * t))))
 
+7
 
 print(semicircle(1 / q), "test")
 
@@ -254,13 +255,16 @@ if AlgorithmChosen not in SynthesisAlgorithm:
 
 if AlgorithmChosen == "pls":
     pulsewidth = float(input("Pulsewidth: "))
-if AlgorithmChosen in OrderedFunctions or ModularFunctions and not OneLowerBound:
-    if AlgorithmChosen in ModularFunctions:
-        if order < 0:
-            print("Error type, 'Complex_Float'")
-            quit()
+if AlgorithmChosen not in OneLowerBound:
+    if AlgorithmChosen in OrderedFunctions or ModularFunctions:
+        order = float(input("Enter order... "))
+        if AlgorithmChosen in ModularFunctions:
+            if order < 0:
+                print("Error type, 'Complex_Float'")
+                quit()
         else:
             order = float(input("Enter order... "))
+
 
 if AlgorithmChosen not in SemiCircle:
     for i in range(0, round(sampleTime * sampleLength)):
