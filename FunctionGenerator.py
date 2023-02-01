@@ -8,8 +8,6 @@ midi_number = (input("Input MIDI #... C1 is 24... "))
 exponent = ((float(midi_number) * 0.301029995664 - 57 * 0.301029995664) / 12)
 frequency = 11 * 2 ** (exponent + 2) * 5 ** (exponent + 1)
 
-# frequency = 2
-
 print(frequency, "Hz")
 sampleLength = q
 sampleTime = float(input("Length in seconds: "))
