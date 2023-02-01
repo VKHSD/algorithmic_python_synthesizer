@@ -331,7 +331,7 @@ else:
         for z in sample_data:
             normalized_data.append(z / dataNormal)
 
-with open(r'C:\Users\Owner\Storage\Music\Music Storage\Sample_Data\FunctionGenerator.txt', 'w') as WS:
+with open(r'FunctionGenerator.txt', 'w') as WS:
     print("Writing...")
     for WSD in normalized_data:
         WS.write("%s\n" % WSD)
