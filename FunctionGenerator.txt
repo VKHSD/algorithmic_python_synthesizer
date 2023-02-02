@@ -1,3 +1,4 @@
+# this is what the output of the program will look like. for conversion into .wav you will need to import data into audacity and then go on from there. I am working on a wav encoder that can run locally. 
 0.0
 0.0023595486841730953
 0.004473699752510066
