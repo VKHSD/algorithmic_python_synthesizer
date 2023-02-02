@@ -1,5 +1,6 @@
-import numpy as np
+import math
 from math import log, erf
+import numpy as np
 import time
 
 a, b, q, euler, pi, order = 0.5, 5, 44100, 2.71828182, 3.14159265, 2.0
@@ -8,7 +9,7 @@ midi_number = (input("Input MIDI #... C1 is 24... "))
 exponent = ((float(midi_number) * 0.301029995664 - 57 * 0.301029995664) / 12)
 frequency = 11 * 2 ** (exponent + 2) * 5 ** (exponent + 1)
 
-print(frequency, "Hz")
+print(round(frequency, 8), "Hz")
 sampleLength = q
 sampleTime = float(input("Length in seconds: "))
 omega = (2 * pi * frequency) / q
@@ -19,7 +20,7 @@ sample_data = []
 
 def percent(iteration):
     if iteration % round(sampleLength / 10) == 0.0:
-        return print(round((iteration / (sampleLength * sampleTime)) * 100, 3), "% done...")
+        return print(round((iteration / (sampleLength * sampleTime)) * 100, 2), "% done...") 
 
 
 def floor(x):
@@ -40,23 +41,23 @@ def sign(x):
 
 
 def cos(x):
-    return np.cos(x)
+    return math.cos(x)
 
 
 def sin(x):
-    return np.sin(x)
+    return math.sin(x)
 
 
 def arcsin(x):
-    return np.arcsin(x)
+    return math.asin(x)
 
 
 def arccos(x):
-    return np.arcsin(x)
+    return math.asin(x)
 
 
 def arctan(x):
-    return np.arcsin(x)
+    return math.asin(x)
 
 
 def factorial(n):
@@ -76,11 +77,11 @@ def circular(t):
 
 
 def tangent(t):
-    return sin(t) / cos(t)
+    return sin(t/2) / cos(t/2)
 
 
 def cotangent(t):
-    return cos(t) / sin(t)
+    return cos(t/2) / sin(t/2)
 
 
 def weierstrass(t, n):
@@ -120,14 +121,6 @@ def semicircle(t):
             sqrt(radius ** 2 - (t % (2 * radius) - radius) ** 2)) / radius
 
 
-def artifact(t):
-    radius = frequency / 4
-    return (sign(sin(((t * q) / omega) / 2 * radius)) * (
-            (radius ** 2) - ((t * q) / omega % 2 * radius) ** (1 / 2)) / radius) - (
-                   sign(sin(((t * q) / omega) / 2 * radius)) * (radius ** 2) - (
-                   (((t * q) / omega) % (2 * radius)) ** (1 / 2)) / radius)
-
-
 def nestedsine(t, n):
     return sin(sin(n * t))
 
@@ -161,7 +154,11 @@ def orderedsine(t):
 
 
 def antilogarithm(t):
-    return (2 * (order ** (abs(sin(t)))) - order - 1) / (order - 1)
+    return (2 * (order ** (abs(sin(t/2)))) - order - 1) / (order - 1)
+
+
+def antilogarithmsmooth(t):
+    return (2 * (order ** (abs(sin((t % (q / (4 * frequency)) + (q / (8 * frequency))) / 2)))) - order - 1) / (order - 1)
 
 
 def tetration(t, n):
@@ -177,11 +174,9 @@ def decreasingfrequency(t, n):
 
 
 def randomsaw(t, n):
-    return (-(2 / pi)) * ((((-1) ** n) / n) * (sin((1+(((erf(.5 + np.random.ranf(1))) + .1)/(10**order))) * (n * t))))
+    return (-(2 / pi)) * (
+                (((-1) ** n) / n) * (sin((1 + ((np.random.ranf(1)) / (10 ** order))) * (n * t))))
 
-7
-
-print(semicircle(1 / q), "test")
 
 SynthesisAlgorithm = {
     "atr": antitriangle,
@@ -203,11 +198,11 @@ SynthesisAlgorithm = {
     "skew": skewer,
     "gsin": gaussiansine,
     "lsin": logsin,
-    "art": artifact,
     "osin": orderedsine,
     "alog": antilogarithm,
-    "erfs": errorsine,
+    "alogsm": antilogarithmsmooth,
     "tetra": tetration,
+    "erfs": errorsine,
     "decr": decreasingfrequency,
     "rsaw": randomsaw,
 }
@@ -221,12 +216,10 @@ cosDenominator = {
 FourierFunctions = {
     "wir": weierstrass,
     "nsin": nestedsine,
-    "gsin": gaussiansine,
-    "erfs": errorsine,
+    "gsin": gaussiansine
 }
 SemiCircle = {
-    "semi": semicircle,
-    "art": artifact
+    "semi": semicircle
 }
 OrderedFunctions = {
     "clx": clx,
@@ -235,105 +228,101 @@ OrderedFunctions = {
     "skew": skewer,
     "lsin": logsin,
     "tetra": tetration,
+    "erfs": errorsine,
     "decr": decreasingfrequency,
     "rsaw": randomsaw,
 }
 ModularFunctions = {
     "osin": orderedsine,
-    "alog": antilogarithm
-}
-OneLowerBound = {
-    "tetra": tetration,
-    "decr": decreasingfrequency,
+    "alog": antilogarithm,
+    "alogsm": antilogarithmsmooth,
+    "rsaw": randomsaw,
 }
 
-AlgorithmChosen = str(input("atr, clx, semi, cir, cot, esin, gsin, lsin, msaw,"
-                            " nsin, pls, saw, sin, slx, skew, sqr, tan, tri, wir: "))
+AlgorithmChosen = str(input("alog, alogsm, atr, cir, clx, cot, decr, esin, gsin, lsin, msaw, nsin, osin, pls, rsaw, "
+                            "saw, semi, sin, skew, slx, sqr, tan, tetra, tri."))
 if AlgorithmChosen not in SynthesisAlgorithm:
     print("Error type, 'Undefined_Algorithm'")
     quit()
 
 if AlgorithmChosen == "pls":
     pulsewidth = float(input("Pulsewidth: "))
-if AlgorithmChosen not in OneLowerBound:
-    if AlgorithmChosen in OrderedFunctions or ModularFunctions:
-        order = float(input("Enter order... "))
-        if AlgorithmChosen in ModularFunctions:
-            if order < 0:
-                print("Error type, 'Complex_Float'")
+
+if AlgorithmChosen in OrderedFunctions and AlgorithmChosen in ModularFunctions:
+    if AlgorithmChosen in ModularFunctions:
+        if AlgorithmChosen is not orderedsine:
+            print("\nOrder may not be less than or equal to 1")
+            mod_order = input("Constant of perfection of anti-logarithmic periodic waveforms is equal to "
+                              "6.5737761766...\n"
+                              "Please enter 'u' use this constant...")
+
+            if mod_order.lower() == "u":
+                order = 6.5737761766
+            elif float(mod_order) > 1:
+                order = float(mod_order)
+            else:
+                print("Error type, Invalid_Input")
                 quit()
         else:
-            order = float(input("Enter order... "))
+            order = float(input("Enter Order..."))
+    else:
+        order = float(input("Enter order... "))
+
+    if order < 0:
+        print("Error type, 'Complex_Float'")
+        quit()
 
 
+end = round(sampleTime * sampleLength)
 if AlgorithmChosen not in SemiCircle:
-    for i in range(0, round(sampleTime * sampleLength)):
+    for i in range(end):
         if AlgorithmChosen in cosDenominator:
-            if cos(i * omega) != 0:
-                sample_data.append((SynthesisAlgorithm[AlgorithmChosen](i * omega)))
+            if cos(omega) != 0:
+                sample_data.append(SynthesisAlgorithm[AlgorithmChosen](i * omega))
                 percent(i)
             elif (i - (q / (4 * frequency))) % (q / 2 * frequency) == 0:
-                sample_data.append(((SynthesisAlgorithm[AlgorithmChosen]((i - 1) * omega)) + (
-                    SynthesisAlgorithm[AlgorithmChosen]((i + 1) * omega))) / 2)
+                sample_data.append((SynthesisAlgorithm[AlgorithmChosen](i * omega - 1) + SynthesisAlgorithm[AlgorithmChosen](i * omega + 1)) / 2)
                 percent(i)
         elif AlgorithmChosen in sinDenominator:
             if sin(i * omega) != 0:
-                sample_data.append((SynthesisAlgorithm[AlgorithmChosen](i * omega)))
+                sample_data.append(SynthesisAlgorithm[AlgorithmChosen](i * omega))
                 percent(i)
             elif i % (q / (2 * frequency)) == 0:
-                sample_data.append(((SynthesisAlgorithm[AlgorithmChosen]((i - 1) * omega)) + (
-                    SynthesisAlgorithm[AlgorithmChosen]((i + 1) * omega))) / 2)
+                sample_data.append((SynthesisAlgorithm[AlgorithmChosen](i * omega - 1) + SynthesisAlgorithm[AlgorithmChosen](i * omega + 1)) / 2)
                 percent(i)
         elif AlgorithmChosen in FourierFunctions:
-            sample_data.append((sum(SynthesisAlgorithm[AlgorithmChosen](i * omega, n) for n in range(resolution))))
+            sample_data.append(sum(SynthesisAlgorithm[AlgorithmChosen](i * omega, n) for n in range(resolution)))
             percent(i)
         elif AlgorithmChosen in OrderedFunctions:
-            sample_data.append((sum(SynthesisAlgorithm[AlgorithmChosen](i * omega, k) for k in range(1, resolution))))
+            sample_data.append(sum(SynthesisAlgorithm[AlgorithmChosen](i * omega, k) for k in range(1, resolution)))
             percent(i)
         elif AlgorithmChosen in ModularFunctions:
+            if AlgorithmChosen == antilogarithm:
+                sample_data.append(SynthesisAlgorithm[AlgorithmChosen](i))
+                percent(i)
+            else:
+                sample_data.append(SynthesisAlgorithm[AlgorithmChosen](i * omega))
+                percent(i)
+        else:
             sample_data.append(SynthesisAlgorithm[AlgorithmChosen](i * omega))
             percent(i)
-        else:
-            sample_data.append((SynthesisAlgorithm[AlgorithmChosen](i * omega)))
-            percent(i)
 elif AlgorithmChosen in SemiCircle:
-    for i in range(0, round(sampleTime * sampleLength)):
+    for i in range(end):
         sample_data.append(semicircle(i / q))
         percent(i)
 
-# print(sample_data)
 
 normalized_data = []
 dataMax = max(sample_data)
 dataMin = min(sample_data)
-dataNormal = 0
+dataNormal = max(dataMax, abs(dataMin))
 
-if AlgorithmChosen not in SemiCircle:
-    if dataMax >= abs(dataMin):
-        dataNormal = dataMax
-    else:
-        dataNormal = abs(dataMin)
-
-    if dataNormal >= 10:
-        for z in sample_data:
-            normalized_data.append(z)
-    else:
-        for z in sample_data:
-            normalized_data.append(z / dataNormal)
+if dataNormal >= 10:
+    normalized_data = sample_data
 else:
-    if dataMax >= abs(dataMin):
-        dataNormal = dataMax
-    else:
-        dataNormal = abs(dataMin)
+    normalized_data = [z / dataNormal for z in sample_data]
 
-    if dataNormal >= 10:
-        for z in sample_data:
-            normalized_data.append(z)
-    else:
-        for z in sample_data:
-            normalized_data.append(z / dataNormal)
-
-with open(r'FunctionGenerator.txt', 'w') as WS:
+with open(r'C:\Users\starf\Documents\AudioTesting\Sample_Data\FunctionGenerator.txt', 'w') as WS:
     print("Writing...")
     for WSD in normalized_data:
         WS.write("%s\n" % WSD)
