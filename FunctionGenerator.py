@@ -1,7 +1,6 @@
 import math
 from math import log, erf
 import numpy as np
-import time
 
 a, b, q, euler, pi, order = 0.5, 5, 44100, 2.71828182, 3.14159265, 2.0
 resolution = 100
@@ -14,7 +13,6 @@ sampleLength = q
 sampleTime = float(input("Length in seconds: "))
 omega = (2 * pi * frequency) / q
 sample_rate = round(q / frequency)
-startTime = time.time()
 sample_data = []
 
 
@@ -328,5 +326,3 @@ with open(r'FunctionGenerator.txt', 'w') as WS:
         WS.write("%s\n" % WSD)
     print(f"{str(AlgorithmChosen)} Sample Data Written!")
 
-executionTime = round((time.time() - startTime), 2)
-print('Execution time in seconds: ' + str(executionTime))
