@@ -322,7 +322,7 @@ if dataNormal >= 10:
 else:
     normalized_data = [z / dataNormal for z in sample_data]
 
-with open(r'C:\Users\starf\Documents\AudioTesting\Sample_Data\FunctionGenerator.txt', 'w') as WS:
+with open(r'FunctionGenerator.txt', 'w') as WS:
     print("Writing...")
     for WSD in normalized_data:
         WS.write("%s\n" % WSD)
