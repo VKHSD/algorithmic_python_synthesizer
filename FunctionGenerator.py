@@ -1,6 +1,8 @@
 import math
 from math import log, erf
 import numpy as np
+import wave
+import struct
 
 a, b, q, euler, pi, order = 0.5, 5, 44100, 2.71828182, 3.14159265, 2.0
 resolution = 100
@@ -16,9 +18,9 @@ sample_rate = round(q / frequency)
 sample_data = []
 
 
-def percent(iteration):
-    if iteration % round(sampleLength / 10) == 0.0:
-        return print(round((iteration / (sampleLength * sampleTime)) * 100, 2), "% done...")
+def percent(progress):
+    perc = 100 * (progress / float(sampleLength * sampleTime))
+    return print(f"\r{perc:.2f}%", end="")
 
 
 def floor(x):
@@ -75,11 +77,11 @@ def circular(t):
 
 
 def tangent(t):
-    return sin(t/2) / cos(t/2)
+    return sin(t / 2) / cos(t / 2)
 
 
 def cotangent(t):
-    return cos(t/2) / sin(t/2)
+    return cos(t / 2) / sin(t / 2)
 
 
 def weierstrass(t, n):
@@ -120,7 +122,7 @@ def semicircle(t):
 
 
 def nestedsine(t, n):
-    return sin(sin(n * t))/resolution
+    return sin(sin(n * t)) / resolution
 
 
 def slx(t, n):
@@ -152,11 +154,12 @@ def orderedsine(t):
 
 
 def antilogarithm(t):
-    return (2 * (order ** (abs(sin(t/2)))) - order - 1) / (order - 1)
+    return (2 * (order ** (abs(sin(t / 2)))) - order - 1) / (order - 1)
 
 
 def antilogarithmsmooth(t):
-    return (2 * (order ** (abs(sin((t % (q / (4 * frequency)) + (q / (8 * frequency))) / 2)))) - order - 1) / (order - 1)
+    return (2 * (order ** (abs(sin((t % (q / (4 * frequency)) +
+                                    (q / (8 * frequency))) / 2)))) - order - 1) / (order - 1)
 
 
 def tetration(t, n):
@@ -173,7 +176,58 @@ def decreasingfrequency(t, n):
 
 def randomsaw(t, n):
     return (-(2 / pi)) * (
-                (((-1) ** n) / n) * (sin((1 + ((np.random.ranf(1)) / (10 ** order))) * (n * t))))
+            (((-1) ** n) / n) * (sin((1 + ((np.random.ranf(1)) / (10 ** order))) * (n * t))))
+
+
+def depthmod(t):
+    return sin(t) - (((floor((2 ** (order - 1)) * sin(t))) + .5) / ((2 ** (order - 1)) - 1))
+
+
+def phasemod(t):
+    return (pi / 2) * (sin((order * t) + ((pi / 2) * sin((order + 1) * t))))
+
+
+def anglemod(t):
+    return sin(t) * cos(((order - 1) * t) + (order * sin(t)))
+
+
+def randompulse(t):
+    global random_pulse_width
+    if (t/omega) <= 5:
+        random_pulse_width = .5
+    if (t/omega) % floor(q/(2*frequency*floor(order))) == 0:
+        if random_pulse_width <= .25:
+            random_pulse_width = random_pulse_width + .1
+        elif random_pulse_width >= .75:
+            random_pulse_width = random_pulse_width - .1
+        else:
+            random_pulse_width = random_pulse_width + np.random.uniform(-.033, .033)
+    return sign((sin(t) - sin(pi * random_pulse_width-.5)))
+
+
+def fourierrandompulse(t, n):
+    global fourier_random_pulse_width
+    if (t/omega) <= 5:
+        fourier_random_pulse_width = .5
+    if (t/omega) % floor(q/(2*frequency)) == 0:
+        if fourier_random_pulse_width <= .25:
+            fourier_random_pulse_width = fourier_random_pulse_width + .1
+        elif fourier_random_pulse_width >= .75:
+            fourier_random_pulse_width = fourier_random_pulse_width - .1
+        else:
+            fourier_random_pulse_width = fourier_random_pulse_width + np.random.uniform(-.033, .033)
+    return fourier_random_pulse_width + ((2/pi)*((1/n)*sin(pi*n*fourier_random_pulse_width)*cos(t*n)))-.5
+
+
+def randomsquare(t):
+    global rsqr_signal
+    if (t/omega) <= 3:
+        rsqr_signal = -1
+    if (t / omega) % floor(q / (2 * frequency)) == 0:
+        rsqr_signal = sign(np.random.uniform(-1, 1))
+        if rsqr_signal == 0:
+            rsqr_signal = -1
+    return rsqr_signal
 
 
 SynthesisAlgorithm = {
@@ -203,6 +257,12 @@ SynthesisAlgorithm = {
     "erfs": errorsine,
     "decr": decreasingfrequency,
     "rsaw": randomsaw,
+    "depth": depthmod,
+    "phase": phasemod,
+    "angle": anglemod,
+    "rpulse": randompulse,
+    "frpulse": fourierrandompulse,
+    "rsqr": randomsquare,
 }
 sinDenominator = {
     "cir": circular,
@@ -224,6 +284,7 @@ FourierOneFunctions = {
     "clx": clx,
     "slx": slx,
     "skew": skewer,
+    "frpulse": fourierrandompulse,
 }
 OrderedFourier = {
     "lsin": logsin,
@@ -241,10 +302,18 @@ OrderedFunctions = {
     "osin": orderedsine,
     "alog": antilogarithm,
     "alogsm": antilogarithmsmooth,
+    "depth": depthmod,
+    "phase": phasemod,
+    "angle": anglemod,
+    "rpulse": randompulse,
 }
 ModularFunctions = {
     "osin": orderedsine,
     "alog": antilogarithm,
+    "depth": depthmod,
+    "phase": phasemod,
+    "angle": anglemod,
+    "rpulse": randompulse,
 }
 Alogsm = {
     "alogsm": antilogarithmsmooth,
@@ -261,8 +330,9 @@ OtherGroups = (
     Alogsm,
 )
 
-AlgorithmChosen = str(input("alog, alogsm, atr, cir, clx, cot, decr, esin, gsin, lsin, msaw, nsin, osin, pls, rsaw, "
-                            "saw, semi, sin, skew, slx, sqr, tan, tetra, tri."))
+AlgorithmChosen = str(input(f"\nalog, alogsm, angle, atr, cir, clx, cot, decr, depth, esin, gsin, lsin, msaw, "
+                            "\nnsin, osin, phase, pls, rsaw, saw, semi, sin, skew, slx, sqr, tan, tetra, tri. "))
+print("")
 if AlgorithmChosen not in SynthesisAlgorithm:
     print("Error type, 'Undefined_Algorithm'")
     quit()
@@ -278,6 +348,9 @@ if AlgorithmChosen in OrderedFunctions and AlgorithmChosen not in Alogsm:
         order = 6.5737761766
     elif float(mod_order) > 1:
         order = float(mod_order)
+    elif float(mod_order) <= 1:
+        order = 1.0001
+        print("Order = 1+...")
     else:
         print("Error type, Invalid_Input")
         quit()
@@ -291,6 +364,9 @@ elif AlgorithmChosen in OrderedFourier:
         order = 6.5737761766
     elif float(mod_order) > 1:
         order = float(mod_order)
+    elif float(mod_order) <= 1:
+        order = 1.0001
+        print("Order = 1+...")
     else:
         print("Error type, Invalid_Input")
         quit()
@@ -298,8 +374,12 @@ elif AlgorithmChosen in OrderedFourier:
 end = round(sampleTime * sampleLength)
 
 for i in range(end):
-    if AlgorithmChosen not in OtherGroups and AlgorithmChosen in SynthesisAlgorithm:
+    if AlgorithmChosen not in sinDenominator and AlgorithmChosen not in cosDenominator and AlgorithmChosen not in \
+            FourierOneFunctions and AlgorithmChosen not in FourierFunctions and AlgorithmChosen not in OrderedFourier \
+            and AlgorithmChosen not in OrderedFunctions and AlgorithmChosen not in ModularFunctions and \
+            AlgorithmChosen not in SemiCircle and AlgorithmChosen not in Alogsm:
         sample_data.append(SynthesisAlgorithm[AlgorithmChosen](i * omega))
+        percent(i)
     if AlgorithmChosen in cosDenominator:
         if cos(omega) != 0:
             sample_data.append(SynthesisAlgorithm[AlgorithmChosen](i * omega))
@@ -344,13 +424,25 @@ dataMax = max(sample_data)
 dataMin = min(sample_data)
 dataNormal = max(dataMax, abs(dataMin))
 
-if dataNormal >= 10:
+if dataNormal >= 30:
     normalized_data = sample_data
 else:
     normalized_data = [z / dataNormal for z in sample_data]
 
 with open(r'FunctionGenerator.txt', 'w') as WS:
-    print("Writing...")
+    print(f"\nWriting...")
     for WSD in normalized_data:
         WS.write("%s\n" % WSD)
     print(f"{str(AlgorithmChosen)} Sample Data Written!")
+
+with wave.open(f"{AlgorithmChosen}.wav", "w") as WAVS:
+    print(f"Writing {str(AlgorithmChosen)}.wav...")
+    WAVS.setnchannels(1)
+    WAVS.setsampwidth(2)
+    WAVS.setframerate(q)
+    for i in range(len(normalized_data)):
+        percent(i)
+        wav_data = int(normalized_data[i] * ((2 ** 15) - 1))
+        WAVS.writeframes(struct.pack("<h", wav_data))
+
+print(f"\n{str(AlgorithmChosen)}.wav Written!")
