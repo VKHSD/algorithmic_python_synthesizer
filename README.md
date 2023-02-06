@@ -5,19 +5,19 @@ Full list of working algorithms:
 
     "atr": antitriangle,
     
-    # the antiderivative of the triangle wave. has good bass tonality
+    # the antiderivative of the triangle wave. has good bass tonality.
     
     "cir": circular,
     
-    # a sort of circular waveform I discovered
+    # a sort of circular waveform I discovered.
     
     "tan": tangent,
     
-    # sin / cos
+    # sin / cos.
     
     "cot": cotangent,
     
-    # cos / sin
+    # cos / sin.
     
     "wir": weierstrass,
     
@@ -25,7 +25,7 @@ Full list of working algorithms:
     
     "esin": esin,
     
-    # eulers constant to the power of sin
+    # eulers constant to the power of sin.
     
     "sin": sine,
     
@@ -33,7 +33,7 @@ Full list of working algorithms:
     
     "tri": triangle,
     
-    # a triangle wave made from trigonometric functions, i.e., arctan(sin)
+    # a triangle wave made from trigonometric functions, i.e., arctan(sin).
     
     "saw": sawtooth,
     
@@ -41,7 +41,7 @@ Full list of working algorithms:
     
     "sqr": square,
     
-    # a square wave made from the sign operator. i.e., sign(sin)
+    # a square wave made from the sign operator. i.e., sign(sin).
     
     "pls": pulse,
     
@@ -53,15 +53,15 @@ Full list of working algorithms:
     
     "nsin": nestedsine,
     
-    # sin(sin)
+    # sin(sin).
     
     "clx": clx,
     
-    # Clausen's function of cosine
+    # Clausen's function of cosine.
     
     "slx": slx,
     
-    # Clausen's function of sine
+    # Clausen's function of sine.
     
     "msaw": msaw,
     
@@ -73,11 +73,11 @@ Full list of working algorithms:
     
     "gsin": gaussiansine,
     
-    # a sine function operated by gaussian distribution for frequency distribution
+    # a sine function operated by gaussian distribution for frequency distribution.
     
     "lsin": logsin,
     
-    # logarithmic distribution of frequency
+    # logarithmic distribution of frequency.
     
     "art": artifact,
     
@@ -97,11 +97,11 @@ Full list of working algorithms:
     
     "erfs": errorsine,
     
-    # the use of the error function to distribute overtones
+    # the use of the error function to distribute overtones.
     
     "tetra": tetration,
     
-    # the use of a tetration to distribute overtones
+    # the use of a tetration to distribute overtones.
     
     "decr": decreasingfrequency,
     
@@ -110,3 +110,11 @@ Full list of working algorithms:
     "rsaw": randomsaw,
     
     # the random saw uses slight variation in pitch that creates noise the longer a waveform goes.
+    
+    "depth": depthmod
+    
+    # uses a hypothetical pure sinusoid and takes the difference of a digital sinusoid of bit depth of (order - 1).
+    
+    "rpulse": randompulse
+    
+    #sends a new pulsewidth variable for every phase cycle multiplied by order.
