@@ -20,7 +20,7 @@ sample_data = []
 
 def percent(progress):
     perc = 100 * (progress / float(sampleLength * sampleTime))
-    print(f"\r{perc:.2f}% Done...", end="")
+    return print(f"\r{perc:.2f}%", end="")
 
 
 def floor(x):
@@ -183,6 +183,22 @@ def depthmod(t):
     return sin(t) - (((floor((2 ** (order - 1)) * sin(t))) + .5) / ((2 ** (order - 1)) - 1))
 
 
+def phasemod(t):
+    return (pi / 2) * (sin((order * t) + ((pi / 2) * sin((order + 1) * t))))
+
+
+def anglemod(t):
+    return sin(t) * cos(((order - 1) * t) + (order * sin(t)))
+
+
+def randompulse(t):
+    global random_pulse_width
+    if (t/omega) % floor(((order-1)*q)/(2*(frequency))) == 0:
+        random_pulse_width = np.random.uniform(.3, .7)-.5
+    return sign((sin(t) - sin(pi * random_pulse_width)))
+
+
+
 SynthesisAlgorithm = {
     "atr": antitriangle,
     "cir": circular,
@@ -211,6 +227,9 @@ SynthesisAlgorithm = {
     "decr": decreasingfrequency,
     "rsaw": randomsaw,
     "depth": depthmod,
+    "phase": phasemod,
+    "angle": anglemod,
+    "rpulse": randompulse,
 }
 sinDenominator = {
     "cir": circular,
@@ -250,11 +269,17 @@ OrderedFunctions = {
     "alog": antilogarithm,
     "alogsm": antilogarithmsmooth,
     "depth": depthmod,
+    "phase": phasemod,
+    "angle": anglemod,
+    "rpulse": randompulse,
 }
 ModularFunctions = {
     "osin": orderedsine,
     "alog": antilogarithm,
     "depth": depthmod,
+    "phase": phasemod,
+    "angle": anglemod,
+    "rpulse": randompulse,
 }
 Alogsm = {
     "alogsm": antilogarithmsmooth,
@@ -271,8 +296,9 @@ OtherGroups = (
     Alogsm,
 )
 
-AlgorithmChosen = str(input("alog, alogsm, atr, cir, clx, cot, decr, depth, esin, gsin, lsin, msaw, "
-                            "nsin, osin, pls, rsaw, saw, semi, sin, skew, slx, sqr, tan, tetra, tri."))
+AlgorithmChosen = str(input(f"\nalog, alogsm, angle, atr, cir, clx, cot, decr, depth, esin, gsin, lsin, msaw, "
+                            "\nnsin, osin, phase, pls, rsaw, saw, semi, sin, skew, slx, sqr, tan, tetra, tri. "))
+print("")
 if AlgorithmChosen not in SynthesisAlgorithm:
     print("Error type, 'Undefined_Algorithm'")
     quit()
@@ -376,7 +402,7 @@ with open(r'FunctionGenerator.txt', 'w') as WS:
     print(f"{str(AlgorithmChosen)} Sample Data Written!")
 
 with wave.open(f"{AlgorithmChosen}.wav", "w") as WAVS:
-    print("Writing .wav...")
+    print(f"Writing {str(AlgorithmChosen)}.wav...")
     WAVS.setnchannels(1)
     WAVS.setsampwidth(2)
     WAVS.setframerate(q)
