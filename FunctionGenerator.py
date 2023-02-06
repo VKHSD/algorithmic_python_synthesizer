@@ -193,7 +193,7 @@ def anglemod(t):
 
 def randompulse(t):
     global random_pulse_width
-    if (t/omega) % floor(((order-1)*q)/(2*(frequency))) == 0:
+    if (t/omega) % floor(q/(2*frequency*order)) == 0:
         random_pulse_width = np.random.uniform(.3, .7)-.5
     return sign((sin(t) - sin(pi * random_pulse_width)))
 
