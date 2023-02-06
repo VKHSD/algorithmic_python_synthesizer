@@ -1,6 +1,8 @@
 import math
 from math import log, erf
 import numpy as np
+import wave
+import struct
 
 a, b, q, euler, pi, order = 0.5, 5, 44100, 2.71828182, 3.14159265, 2.0
 resolution = 100
@@ -16,9 +18,9 @@ sample_rate = round(q / frequency)
 sample_data = []
 
 
-def percent(iteration):
-    if iteration % round(sampleLength / 10) == 0.0:
-        return print(round((iteration / (sampleLength * sampleTime)) * 100, 2), "% done...")
+def percent(progress):
+    perc = 100 * (progress / float(sampleLength * sampleTime))
+    print(f"\r{perc:.2f}% Done...", end="")
 
 
 def floor(x):
@@ -75,11 +77,11 @@ def circular(t):
 
 
 def tangent(t):
-    return sin(t/2) / cos(t/2)
+    return sin(t / 2) / cos(t / 2)
 
 
 def cotangent(t):
-    return cos(t/2) / sin(t/2)
+    return cos(t / 2) / sin(t / 2)
 
 
 def weierstrass(t, n):
@@ -120,7 +122,7 @@ def semicircle(t):
 
 
 def nestedsine(t, n):
-    return sin(sin(n * t))/resolution
+    return sin(sin(n * t)) / resolution
 
 
 def slx(t, n):
@@ -152,11 +154,12 @@ def orderedsine(t):
 
 
 def antilogarithm(t):
-    return (2 * (order ** (abs(sin(t/2)))) - order - 1) / (order - 1)
+    return (2 * (order ** (abs(sin(t / 2)))) - order - 1) / (order - 1)
 
 
 def antilogarithmsmooth(t):
-    return (2 * (order ** (abs(sin((t % (q / (4 * frequency)) + (q / (8 * frequency))) / 2)))) - order - 1) / (order - 1)
+    return (2 * (order ** (abs(sin((t % (q / (4 * frequency)) +
+                                    (q / (8 * frequency))) / 2)))) - order - 1) / (order - 1)
 
 
 def tetration(t, n):
@@ -173,11 +176,11 @@ def decreasingfrequency(t, n):
 
 def randomsaw(t, n):
     return (-(2 / pi)) * (
-                (((-1) ** n) / n) * (sin((1 + ((np.random.ranf(1)) / (10 ** order))) * (n * t))))
+            (((-1) ** n) / n) * (sin((1 + ((np.random.ranf(1)) / (10 ** order))) * (n * t))))
 
 
 def depthmod(t):
-    return sin(t)-(((floor((2**(order-1))*sin(t)))+.5)/((2**(order-1))-1))
+    return sin(t) - (((floor((2 ** (order - 1)) * sin(t))) + .5) / ((2 ** (order - 1)) - 1))
 
 
 SynthesisAlgorithm = {
@@ -311,8 +314,12 @@ elif AlgorithmChosen in OrderedFourier:
 end = round(sampleTime * sampleLength)
 
 for i in range(end):
-    if AlgorithmChosen not in OtherGroups and AlgorithmChosen in SynthesisAlgorithm:
+    if AlgorithmChosen not in sinDenominator and AlgorithmChosen not in cosDenominator and AlgorithmChosen not in \
+            FourierOneFunctions and AlgorithmChosen not in FourierFunctions and AlgorithmChosen not in OrderedFourier \
+            and AlgorithmChosen not in OrderedFunctions and AlgorithmChosen not in ModularFunctions and \
+            AlgorithmChosen not in SemiCircle and AlgorithmChosen not in Alogsm:
         sample_data.append(SynthesisAlgorithm[AlgorithmChosen](i * omega))
+        percent(i)
     if AlgorithmChosen in cosDenominator:
         if cos(omega) != 0:
             sample_data.append(SynthesisAlgorithm[AlgorithmChosen](i * omega))
@@ -363,7 +370,19 @@ else:
     normalized_data = [z / dataNormal for z in sample_data]
 
 with open(r'FunctionGenerator.txt', 'w') as WS:
-    print("Writing...")
+    print(f"\nWriting...")
     for WSD in normalized_data:
         WS.write("%s\n" % WSD)
     print(f"{str(AlgorithmChosen)} Sample Data Written!")
+
+with wave.open(f"{AlgorithmChosen}.wav", "w") as WAVS:
+    print("Writing .wav...")
+    WAVS.setnchannels(1)
+    WAVS.setsampwidth(2)
+    WAVS.setframerate(q)
+    for i in range(len(normalized_data)):
+        percent(i)
+        wav_data = int(normalized_data[i] * ((2 ** 15) - 1))
+        WAVS.writeframes(struct.pack("<h", wav_data))
+
+print(f"\n{str(AlgorithmChosen)}.wav Written!")
