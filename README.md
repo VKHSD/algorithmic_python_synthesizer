@@ -111,10 +111,26 @@ Full list of working algorithms:
     
     # the random saw uses slight variation in pitch that creates noise the longer a waveform goes.
     
-    "depth": depthmod
+    "depth": depthmod,
     
     # uses a hypothetical pure sinusoid and takes the difference of a digital sinusoid of bit depth of (order - 1).
     
-    "rpulse": randompulse
+    "phase": phasemod,
     
-    #sends a new pulsewidth variable for every phase cycle multiplied by order.
+    # uses basic phase modulation to generate a wave. as in. using an oscillator for a phase change
+    
+    "angle": anglemod,
+    
+    # uses angle modulation. as in, modulating multiple angles using an order and other oscillators.
+    
+    "rpulse": randompulse,
+    
+    # sends a new pulsewidth variable for every phase cycle multiplied by order.
+
+    "frpulse": fourierrandompulse,
+    
+    # same idea as the rpulse algorithm except using a fourier series. (currently not working as intended).
+    
+    "rsqr": randomsquare,
+    
+    # sends either a HIGH or LOW signal based on a 50% chance every theoretical cycle.
