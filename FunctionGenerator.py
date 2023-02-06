@@ -176,6 +176,10 @@ def randomsaw(t, n):
                 (((-1) ** n) / n) * (sin((1 + ((np.random.ranf(1)) / (10 ** order))) * (n * t))))
 
 
+def depthmod(t):
+    return sin(t)-(((floor((2**(order-1))*sin(t)))+.5)/((2**(order-1))-1))
+
+
 SynthesisAlgorithm = {
     "atr": antitriangle,
     "cir": circular,
@@ -203,6 +207,7 @@ SynthesisAlgorithm = {
     "erfs": errorsine,
     "decr": decreasingfrequency,
     "rsaw": randomsaw,
+    "depth": depthmod,
 }
 sinDenominator = {
     "cir": circular,
@@ -241,10 +246,12 @@ OrderedFunctions = {
     "osin": orderedsine,
     "alog": antilogarithm,
     "alogsm": antilogarithmsmooth,
+    "depth": depthmod,
 }
 ModularFunctions = {
     "osin": orderedsine,
     "alog": antilogarithm,
+    "depth": depthmod,
 }
 Alogsm = {
     "alogsm": antilogarithmsmooth,
@@ -261,8 +268,8 @@ OtherGroups = (
     Alogsm,
 )
 
-AlgorithmChosen = str(input("alog, alogsm, atr, cir, clx, cot, decr, esin, gsin, lsin, msaw, nsin, osin, pls, rsaw, "
-                            "saw, semi, sin, skew, slx, sqr, tan, tetra, tri."))
+AlgorithmChosen = str(input("alog, alogsm, atr, cir, clx, cot, decr, depth, esin, gsin, lsin, msaw, "
+                            "nsin, osin, pls, rsaw, saw, semi, sin, skew, slx, sqr, tan, tetra, tri."))
 if AlgorithmChosen not in SynthesisAlgorithm:
     print("Error type, 'Undefined_Algorithm'")
     quit()
@@ -278,6 +285,9 @@ if AlgorithmChosen in OrderedFunctions and AlgorithmChosen not in Alogsm:
         order = 6.5737761766
     elif float(mod_order) > 1:
         order = float(mod_order)
+    elif float(mod_order) <= 1:
+        order = 1.0001
+        print("Order = 1+...")
     else:
         print("Error type, Invalid_Input")
         quit()
@@ -291,6 +301,9 @@ elif AlgorithmChosen in OrderedFourier:
         order = 6.5737761766
     elif float(mod_order) > 1:
         order = float(mod_order)
+    elif float(mod_order) <= 1:
+        order = 1.0001
+        print("Order = 1+...")
     else:
         print("Error type, Invalid_Input")
         quit()
