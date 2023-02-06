@@ -330,8 +330,9 @@ OtherGroups = (
     Alogsm,
 )
 
-AlgorithmChosen = str(input(f"\nalog, alogsm, angle, atr, cir, clx, cot, decr, depth, esin, gsin, lsin, msaw, "
-                            "\nnsin, osin, phase, pls, rsaw, saw, semi, sin, skew, slx, sqr, tan, tetra, tri. "))
+AlgorithmChosen = str(input(f"\nalog, alogsm, angle, atr, cir, clx, cot, decr, depth, esin, frpulse, gsin, lsin, msaw, "
+                            "\nnsin, osin, phase, pls, rpulse, rsaw, rsqr, saw, semi, sin, skew, slx, sqr, tan, tetra, "
+                            "\ntri. "))
 print("")
 if AlgorithmChosen not in SynthesisAlgorithm:
     print("Error type, 'Undefined_Algorithm'")
