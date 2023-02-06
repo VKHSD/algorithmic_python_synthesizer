@@ -110,3 +110,7 @@ Full list of working algorithms:
     "rsaw": randomsaw,
     
     # the random saw uses slight variation in pitch that creates noise the longer a waveform goes.
+    
+    "depth": depthmod
+    
+    # uses a hypothetical pure sinusoid and takes the difference of a digital sinusoid of bit depth of (order - 1)
