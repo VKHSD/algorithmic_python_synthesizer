@@ -134,3 +134,35 @@ Full list of working algorithms:
     "rsqr": randomsquare,
     
     # sends either a HIGH or LOW signal based on a 50% chance every theoretical cycle.
+    
+    "bcsin": bitcrush_sin,
+    
+    # floor(order*sin)/order
+    
+    "bctri": bitcrush_triangle,
+    
+    # floor(order*triangle)/order
+    
+    "bcsaw": bitcrush_sawtooth,
+    
+    # floor(order*sawtooth)/order
+    
+    "bcatr": bitcrush_antitriangle,
+    
+    # floor(order*antitriangle)/order
+    
+    "bccir": bitcrush_circular,
+    
+    # floor(order*circular)/order
+    
+    "sinh": hyperbolic_sin,
+    
+    # sinh(order*sin) makes for an interesting tone
+    
+    "tanh": hyperbolic_tan,
+    
+    # tanh(order*sin) gives a nice distorted tone
+    
+    "sinr": sineroot,
+    
+    # a big mess of sines that gives a very odd modulation of tone.
