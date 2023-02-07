@@ -193,41 +193,79 @@ def anglemod(t):
 
 def randompulse(t):
     global random_pulse_width
-    if (t/omega) <= 5:
+    if (t / omega) <= 5:
         random_pulse_width = .5
-    if (t/omega) % floor(q/(2*frequency*floor(order))) == 0:
+    if (t / omega) % floor(q / (2 * frequency * floor(order))) == 0:
         if random_pulse_width <= .25:
             random_pulse_width = random_pulse_width + .1
         elif random_pulse_width >= .75:
             random_pulse_width = random_pulse_width - .1
         else:
             random_pulse_width = random_pulse_width + np.random.uniform(-.033, .033)
-    return sign((sin(t) - sin(pi * random_pulse_width-.5)))
+    return sign((sin(t) - sin(pi * random_pulse_width - .5)))
 
 
 def fourierrandompulse(t, n):
     global fourier_random_pulse_width
-    if (t/omega) <= 5:
+    if (t / omega) <= 5:
         fourier_random_pulse_width = .5
-    if (t/omega) % floor(q/(2*frequency)) == 0:
+    if (t / omega) % floor(q / (2 * frequency)) == 0:
         if fourier_random_pulse_width <= .25:
             fourier_random_pulse_width = fourier_random_pulse_width + .1
         elif fourier_random_pulse_width >= .75:
             fourier_random_pulse_width = fourier_random_pulse_width - .1
         else:
             fourier_random_pulse_width = fourier_random_pulse_width + np.random.uniform(-.033, .033)
-    return fourier_random_pulse_width + ((2/pi)*((1/n)*sin(pi*n*fourier_random_pulse_width)*cos(t*n)))-.5
+    return fourier_random_pulse_width + (
+            (2 / pi) * ((1 / n) * sin(pi * n * fourier_random_pulse_width) * cos(t * n))) - .5
 
 
 def randomsquare(t):
     global rsqr_signal
-    if (t/omega) <= 3:
+    if (t / omega) <= 3:
         rsqr_signal = -1
     if (t / omega) % floor(q / (2 * frequency)) == 0:
         rsqr_signal = sign(np.random.uniform(-1, 1))
         if rsqr_signal == 0:
             rsqr_signal = -1
     return rsqr_signal
+
+
+def bitcrush_sin(t):
+    return floor(order * (sin(t))) / order
+
+
+def bitcrush_sawtooth(t):
+    return floor(order * (sawtooth(t))) / order
+
+
+def bitcrush_triangle(t):
+    return floor(order * (triangle(t))) / order
+
+
+def bitcrush_antitriangle(t):
+    return floor(order * (antitriangle(t))) / order
+
+
+def bitcrush_circular(t):
+    return floor(order * (circular(t))) / order
+
+
+def hyperbolic_sin(t):
+    return np.sinh(order*sin(t))/np.sinh(order)
+
+
+def hyperbolic_tan(t):
+    return np.tanh(order*sin(t))
+
+
+def sineroot(t):
+    if t/omega == 0:
+        return 0
+    else:
+        sineroot_exponent = 1/(1+sin(order*t))
+        abs_sine = abs(sin(t))
+        return (abs_sine / sin(t))*(abs_sine ** sineroot_exponent)
 
 
 SynthesisAlgorithm = {
@@ -263,6 +301,14 @@ SynthesisAlgorithm = {
     "rpulse": randompulse,
     "frpulse": fourierrandompulse,
     "rsqr": randomsquare,
+    "bcsin": bitcrush_sin,
+    "bctri": bitcrush_triangle,
+    "bcsaw": bitcrush_sawtooth,
+    "bcatr": bitcrush_antitriangle,
+    "bccir": bitcrush_circular,
+    "sinh": hyperbolic_sin,
+    "tanh": hyperbolic_tan,
+    "sinr": sineroot,
 }
 sinDenominator = {
     "cir": circular,
@@ -306,6 +352,14 @@ OrderedFunctions = {
     "phase": phasemod,
     "angle": anglemod,
     "rpulse": randompulse,
+    "bcsin": bitcrush_sin,
+    "bctri": bitcrush_triangle,
+    "bcsaw": bitcrush_sawtooth,
+    "bcatr": bitcrush_antitriangle,
+    "bccir": bitcrush_circular,
+    "sinh": hyperbolic_sin,
+    "tanh": hyperbolic_tan,
+    "sinr": sineroot,
 }
 ModularFunctions = {
     "osin": orderedsine,
@@ -314,6 +368,14 @@ ModularFunctions = {
     "phase": phasemod,
     "angle": anglemod,
     "rpulse": randompulse,
+    "bcsin": bitcrush_sin,
+    "bctri": bitcrush_triangle,
+    "bcsaw": bitcrush_sawtooth,
+    "bcatr": bitcrush_antitriangle,
+    "bccir": bitcrush_circular,
+    "sinh": hyperbolic_sin,
+    "tanh": hyperbolic_tan,
+    "sinr": sineroot,
 }
 Alogsm = {
     "alogsm": antilogarithmsmooth,
