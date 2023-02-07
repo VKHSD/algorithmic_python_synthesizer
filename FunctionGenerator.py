@@ -67,6 +67,13 @@ def factorial(n):
         return n * factorial(n - 1)
 
 
+def bitcrush_algorithm(t):
+    global bitcrush_signal
+    if i % floor(q/(2*order)) == 0:
+        bitcrush_signal = t
+    return bitcrush_signal
+
+
 def antitriangle(t):
     return ((sign(sin(arcsin(sin(t)))) * ((arcsin(cos(t))) ** 2)) / (pi * 2 * pi * frequency)) - (
             (sign(sin(arcsin(sin(t))))) / (8 * frequency))
@@ -232,31 +239,31 @@ def randomsquare(t):
 
 
 def bitcrush_sin(t):
-    return floor(order * (sin(t))) / order
+    return bitcrush_algorithm(sin(t))
 
 
 def bitcrush_sawtooth(t):
-    return floor(order * (sawtooth(t))) / order
+    return bitcrush_algorithm(sawtooth(t))
 
 
 def bitcrush_triangle(t):
-    return floor(order * (triangle(t))) / order
+    return bitcrush_algorithm(triangle(t))
 
 
 def bitcrush_antitriangle(t):
-    return floor(order * (antitriangle(t))) / order
+    return bitcrush_algorithm(antitriangle(t))
 
 
 def bitcrush_circular(t):
-    return floor(order * (circular(t))) / order
+    return bitcrush_algorithm(circular(t))
 
 
 def hyperbolic_sin(t):
-    return np.sinh(order*sin(t))/np.sinh(order)
+    return math.sinh(order*sin(t))/math.sinh(order)
 
 
 def hyperbolic_tan(t):
-    return np.tanh(order*sin(t))
+    return math.tanh(order*sin(t))
 
 
 def sineroot(t):
