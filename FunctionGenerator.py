@@ -418,9 +418,12 @@ if AlgorithmChosen in OrderedFunctions and AlgorithmChosen not in Alogsm:
         order = 6.5737761766
     elif float(mod_order) > 1:
         order = float(mod_order)
-    elif float(mod_order) <= 1:
+    elif -1 < float(mod_order) <= 1:
         order = 1.0001
         print("Order = 1+...")
+    elif float(mod_order) <= -1:
+        order = frequency
+        print(f"Order = {round(frequency, 4)}Hz")
     else:
         print("Error type, Invalid_Input")
         quit()
@@ -434,9 +437,12 @@ elif AlgorithmChosen in OrderedFourier:
         order = 6.5737761766
     elif float(mod_order) > 1:
         order = float(mod_order)
-    elif float(mod_order) <= 1:
+    elif -1 < float(mod_order) <= 1:
         order = 1.0001
         print("Order = 1+...")
+    elif float(mod_order) <= -1:
+        order = frequency
+        print(f"Order = {round(frequency, 4)}Hz")
     else:
         print("Error type, Invalid_Input")
         quit()
