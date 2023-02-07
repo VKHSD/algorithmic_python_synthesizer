@@ -137,23 +137,23 @@ Full list of working algorithms:
     
     "bcsin": bitcrush_sin,
     
-    # floor(order*sin)/order
+    # bitcrush of the sin wave as order = frequency in which the bitcrush with crush.
     
     "bctri": bitcrush_triangle,
     
-    # floor(order*triangle)/order
+    # bitcrush of the triangle wave as order = frequency in which the bitcrush with crush.
     
     "bcsaw": bitcrush_sawtooth,
     
-    # floor(order*sawtooth)/order
+    # bitcrush of the sawtooth wave as order = frequency in which the bitcrush with crush.
     
     "bcatr": bitcrush_antitriangle,
     
-    # floor(order*antitriangle)/order
+    # bitcrush of the antitriangle wave as order = frequency in which the bitcrush with crush.
     
     "bccir": bitcrush_circular,
     
-    # floor(order*circular)/order
+    # bitcrush of the circular wave as order = frequency in which the bitcrush with crush.
     
     "sinh": hyperbolic_sin,
     
