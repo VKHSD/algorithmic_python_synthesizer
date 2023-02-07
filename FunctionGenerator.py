@@ -274,8 +274,8 @@ def sineroot(t):
         abs_sine = abs(sin(t))
         return (abs_sine / sin(t))*(abs_sine ** sineroot_exponent)
 
-
-SynthesisAlgorithm = {
+# where all algorithms are stored
+SynthesisAlgorithm = { 
     "atr": antitriangle,
     "cir": circular,
     "tan": tangent,
@@ -317,19 +317,23 @@ SynthesisAlgorithm = {
     "tanh": hyperbolic_tan,
     "sinr": sineroot,
 }
+# where algorithms that divide by sine are stored unless parsed otherwise
 sinDenominator = {
     "cir": circular,
     "cot": cotangent
 }
+# where algorithms that divide by cosine are stored unless parsed otherwise
 cosDenominator = {
     "tan": tangent
 }
+# where algorithms that are a fourier series that begin at 0 are stored
 FourierFunctions = {
     "wir": weierstrass,
     "nsin": nestedsine,
     "gsin": gaussiansine,
     "erfs": errorsine,
 }
+# where algorithms that are a fourier series that begin at 1 are stored
 FourierOneFunctions = {
     "tetra": tetration,
     "decr": decreasingfrequency,
@@ -339,13 +343,16 @@ FourierOneFunctions = {
     "skew": skewer,
     "frpulse": fourierrandompulse,
 }
+# where algorithms that are a fourier series that begin at 1 and with an order modulator are stored
 OrderedFourier = {
     "lsin": logsin,
     "msaw": msaw,
 }
+# a very special equation that needs a very special place
 SemiCircle = {
     "semi": semicircle,
 }
+# where all ordered algorithms are stored so that the input for an order may be called
 OrderedFunctions = {
     "clx": clx,
     "slx": slx,
@@ -368,6 +375,7 @@ OrderedFunctions = {
     "tanh": hyperbolic_tan,
     "sinr": sineroot,
 }
+# where algorithms that have an order modulator and that are NOT fourier functions
 ModularFunctions = {
     "osin": orderedsine,
     "alog": antilogarithm,
@@ -384,9 +392,11 @@ ModularFunctions = {
     "tanh": hyperbolic_tan,
     "sinr": sineroot,
 }
+# another very special place for a very special algorithm
 Alogsm = {
     "alogsm": antilogarithmsmooth,
 }
+# where all groups are placed
 OtherGroups = (
     sinDenominator,
     cosDenominator,
@@ -399,9 +409,10 @@ OtherGroups = (
     Alogsm,
 )
 
-AlgorithmChosen = str(input(f"\nalog, alogsm, angle, atr, cir, clx, cot, decr, depth, esin, frpulse, gsin, lsin, msaw, "
-                            "\nnsin, osin, phase, pls, rpulse, rsaw, rsqr, saw, semi, sin, skew, slx, sqr, tan, tetra, "
-                            "\ntri. "))
+AlgorithmChosen = str(input(f"\nalog, alogsm, angle, atr, bcatr, bccir, bcsaw, bcsin, bctri, cir, clx, decr, "
+                            f"\ndepth, esin, erfs, frpulse, gsin, lsin, msaw, nsin, osin, pls, phase, rpulse, "
+                            f"\nrsaw, rsqr, saw, semi, sin, sinh, sinr, skew, sqr, tetra, tan, tanh, wir"))
+
 print("")
 if AlgorithmChosen not in SynthesisAlgorithm:
     print("Error type, 'Undefined_Algorithm'")
