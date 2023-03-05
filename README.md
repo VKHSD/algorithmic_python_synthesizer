@@ -1,7 +1,15 @@
 # AudioTransformer
-    This takes a MONO input .wav file and outputs a normalized version of the input, differentiated input, and integrated input. This gives the integral of the function which leaves a bass-heavy signal and a differentiated signal which also provides a treble-heavy version. It turns triangle waves into square waves when differentiated and turns square waves into triangle waves.
+    This takes a MONO input .wav file and outputs a 
+    normalized version of the input, differentiated 
+    input, and integrated input. This gives the integral 
+    of the function which leaves a bass-heavy signal and 
+    a differentiated signal which also provides a 
+    treble-heavy version. It turns triangle waves 
+    into square waves when differentiated and turns 
+    square waves into triangle waves.
 
-    The input file must be named "ANALYTE" and a .wav file of the type 16bit.
+    The input file must be named "ANALYTE" and a 
+    .wav file of the type 16bit.
 
 
 # algorithmic_python_synthesizer
