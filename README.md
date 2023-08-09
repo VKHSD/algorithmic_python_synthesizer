@@ -1,3 +1,7 @@
+# Algorithmic Python DSP:
+for use by sampling. ie, create a signal
+and use it within your preferred DAW.
+
 # AudioTransformer
     This takes a MONO input .wav file and outputs a 
     normalized version of the input, differentiated 
