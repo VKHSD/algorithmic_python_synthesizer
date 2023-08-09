@@ -1,36 +1,75 @@
+#                    )      )   (      (      
+#                 ( /(   ( /(   )\ )   )\ )   
+#       (   (     )\())  )\()) (()/(  (()/(   
+#       )\  )\  |((_)\  ((_)\   /(_))  /(_))  
+#      ((_)((_) |_ ((_)  _((_) (_))   (_))_   
+#      \ \ / /  | |/ /  | || | / __|   |   \  
+#       \ V /     ' <   | __ | \__ \   | |) | 
+#        \_/     _|\_\  |_||_| |___/   |___/  
+
+
+
+import os
 import math
 from math import log, erf
 import numpy as np
 import wave
 import struct
 
+# Folder name
+folder_name = "GeneratedFunctions"
+
+# Check if folder exists. If not, create it.
+if not os.path.exists(folder_name):
+    os.makedirs(folder_name)
+
 a, b, q, euler, pi, order = 0.5, 5, 44100, 2.71828182, 3.14159265, 2.0
 resolution = 100
-midi_number = (input("Input MIDI #... C1 is 24... "))
+midi_number = 24  # (input("Input MIDI #... C1 is 24... "))
 exponent = ((float(midi_number) * 0.301029995664 - 57 * 0.301029995664) / 12)
 frequency = 11 * 2 ** (exponent + 2) * 5 ** (exponent + 1)
 
 print(round(frequency, 8), "Hz")
 sampleLength = q
-sampleTime = float(input("Length in seconds: "))
+sampleTime = 1  # float(input("Length in seconds: "))
 omega = (2 * pi * frequency) / q
 sample_rate = round(q / frequency)
 sample_data = []
 
 
+def handle_zero_division(func):
+    """
+    Decorator to handle ZeroDivisionError for the function it wraps.
+    It will try to execute the function and if a ZeroDivisionError occurs,
+    it will call the function again with the next value (t + 1).
+    """
+
+    def wrapper(t, *args, **kwargs):
+        try:
+            return func(t, *args, **kwargs)
+        except ZeroDivisionError:
+            return func(t + 1, *args, **kwargs)  # here, we're taking t+1 as the next best value
+
+    return wrapper
+
+
+@handle_zero_division
 def percent(progress):
     perc = 100 * (progress / float(sampleLength * sampleTime))
     return print(f"\r{perc:.2f}%", end="")
 
 
+@handle_zero_division
 def floor(x):
     return int(x) if x >= 0 else int(x) - 1
 
 
+@handle_zero_division
 def ceil(x):
     return int(x) + 1 if x > int(x) else int(x)
 
 
+@handle_zero_division
 def sign(x):
     if x > 0:
         return 1
@@ -40,26 +79,32 @@ def sign(x):
         return -1
 
 
+@handle_zero_division
 def cos(x):
     return math.cos(x)
 
 
+@handle_zero_division
 def sin(x):
     return math.sin(x)
 
 
+@handle_zero_division
 def arcsin(x):
     return math.asin(x)
 
 
+@handle_zero_division
 def arccos(x):
     return math.asin(x)
 
 
+@handle_zero_division
 def arctan(x):
     return math.asin(x)
 
 
+@handle_zero_division
 def factorial(n):
     if n == 0:
         return 1
@@ -67,58 +112,71 @@ def factorial(n):
         return n * factorial(n - 1)
 
 
+@handle_zero_division
 def bitcrush_algorithm(t):
     global bitcrush_signal
-    if i % floor(q/(2*order)) == 0:
+    if i % floor(q / (2 * order)) == 0:
         bitcrush_signal = t
     return bitcrush_signal
 
 
+@handle_zero_division
 def antitriangle(t):
     return ((sign(sin(arcsin(sin(t)))) * ((arcsin(cos(t))) ** 2)) / (pi * 2 * pi * frequency)) - (
             (sign(sin(arcsin(sin(t))))) / (8 * frequency))
 
 
+@handle_zero_division
 def circular(t):
     return (((arcsin(sin(t))) / sin(t)) - (pi / 2)) * (sign(cos(t)))
 
 
+@handle_zero_division
 def tangent(t):
     return sin(t / 2) / cos(t / 2)
 
 
+@handle_zero_division
 def cotangent(t):
     return cos(t / 2) / sin(t / 2)
 
 
+@handle_zero_division
 def weierstrass(t, n):
     return (a ** n) * cos((b ** n) * t)
 
 
+@handle_zero_division
 def esin(t):
     return (euler ** (sin(t))) - (((1 / euler) + euler) / 2)
 
 
+@handle_zero_division
 def sine(t):
     return sin(t)
 
 
+@handle_zero_division
 def triangle(t):
     return (pi / 2) * arcsin(sin(t))
 
 
+@handle_zero_division
 def sawtooth(t):
     return (((t / pi) - 1) % 2) - 1
 
 
+@handle_zero_division
 def square(t):
     return sign(sin(t))
 
 
+@handle_zero_division
 def pulse(t):
     return sign((cos(t) - cos(pi * pulsewidth)))
 
 
+@handle_zero_division
 def semicircle(t):
     def sqrt(number):
         return number ** (1 / 2)
@@ -128,76 +186,94 @@ def semicircle(t):
             sqrt(radius ** 2 - (t % (2 * radius) - radius) ** 2)) / radius
 
 
+@handle_zero_division
 def nestedsine(t, n):
     return sin(sin(n * t)) / resolution
 
 
+@handle_zero_division
 def slx(t, n):
     return (sin(n * t)) / (n ** order)
 
 
+@handle_zero_division
 def clx(t, n):
     return (cos(n * t)) / (n ** order)
 
 
+@handle_zero_division
 def msaw(t, n):
     return (-(2 / pi)) * ((((-1) ** n) / n) * (sin(cos(n * (order / 100)) * (n * t))))
 
 
+@handle_zero_division
 def skewer(t, n):
     return (-(2 / pi)) * ((((-1) ** n) / (2 * n + 1)) * (sin(cos(n * (order / 100)) * ((2 * n + 1) * t))))
 
 
+@handle_zero_division
 def gaussiansine(t, n):
     return (euler ** (-n)) * sin(t * (euler ** n))
 
 
+@handle_zero_division
 def logsin(t, n):
     return (log(n, order) * sin(log(n, order) * t)) / log(factorial(resolution), order)
 
 
+@handle_zero_division
 def orderedsine(t):
     return (2 * (order ** sin(t)) / order) - 1
 
 
+@handle_zero_division
 def antilogarithm(t):
     return (2 * (order ** (abs(sin(t / 2)))) - order - 1) / (order - 1)
 
 
+@handle_zero_division
 def antilogarithmsmooth(t):
     return (2 * (order ** (abs(sin((t % (q / (4 * frequency)) +
                                     (q / (8 * frequency))) / 2)))) - order - 1) / (order - 1)
 
 
+@handle_zero_division
 def tetration(t, n):
     return (n ** (-n)) * (sin(t * (n ** n)))
 
 
+@handle_zero_division
 def errorsine(t, n):
     return (erf(n) * sin(t * erf(n))) / resolution
 
 
+@handle_zero_division
 def decreasingfrequency(t, n):
     return (n * sin((t * resolution) / n)) / (resolution ** 2)
 
 
+@handle_zero_division
 def randomsaw(t, n):
     return (-(2 / pi)) * (
             (((-1) ** n) / n) * (sin((1 + ((np.random.ranf(1)) / (10 ** order))) * (n * t))))
 
 
+@handle_zero_division
 def depthmod(t):
     return sin(t) - (((floor((2 ** (order - 1)) * sin(t))) + .5) / ((2 ** (order - 1)) - 1))
 
 
+@handle_zero_division
 def phasemod(t):
     return (pi / 2) * (sin((order * t) + ((pi / 2) * sin((order + 1) * t))))
 
 
+@handle_zero_division
 def anglemod(t):
     return sin(t) * cos(((order - 1) * t) + (order * sin(t)))
 
 
+@handle_zero_division
 def randompulse(t):
     global random_pulse_width
     if (t / omega) <= 5:
@@ -212,6 +288,7 @@ def randompulse(t):
     return sign((sin(t) - sin(pi * random_pulse_width - .5)))
 
 
+@handle_zero_division
 def fourierrandompulse(t, n):
     global fourier_random_pulse_width
     if (t / omega) <= 5:
@@ -227,6 +304,7 @@ def fourierrandompulse(t, n):
             (2 / pi) * ((1 / n) * sin(pi * n * fourier_random_pulse_width) * cos(t * n))) - .5
 
 
+@handle_zero_division
 def randomsquare(t):
     global rsqr_signal
     if (t / omega) <= 3:
@@ -238,44 +316,53 @@ def randomsquare(t):
     return rsqr_signal
 
 
+@handle_zero_division
 def bitcrush_sin(t):
     return bitcrush_algorithm(sin(t))
 
 
+@handle_zero_division
 def bitcrush_sawtooth(t):
     return bitcrush_algorithm(sawtooth(t))
 
 
+@handle_zero_division
 def bitcrush_triangle(t):
     return bitcrush_algorithm(triangle(t))
 
 
+@handle_zero_division
 def bitcrush_antitriangle(t):
     return bitcrush_algorithm(antitriangle(t))
 
 
+@handle_zero_division
 def bitcrush_circular(t):
     return bitcrush_algorithm(circular(t))
 
 
+@handle_zero_division
 def hyperbolic_sin(t):
-    return math.sinh(order*sin(t))/math.sinh(order)
+    return math.sinh(order * sin(t)) / math.sinh(order)
 
 
+@handle_zero_division
 def hyperbolic_tan(t):
-    return math.tanh(order*sin(t))
+    return math.tanh(order * sin(t))
 
 
+@handle_zero_division
 def sineroot(t):
-    if t/omega == 0:
+    if t / omega == 0:
         return 0
     else:
-        sineroot_exponent = 1/(1+sin(order*t))
+        sineroot_exponent = 1 / (1 + sin(order * t))
         abs_sine = abs(sin(t))
-        return (abs_sine / sin(t))*(abs_sine ** sineroot_exponent)
+        return (abs_sine / sin(t)) * (abs_sine ** sineroot_exponent)
+
 
 # where all algorithms are stored
-SynthesisAlgorithm = { 
+SynthesisAlgorithm = {
     "atr": antitriangle,
     "cir": circular,
     "tan": tangent,
@@ -414,122 +501,90 @@ AlgorithmChosen = str(input(f"\nalog, alogsm, angle, atr, bcatr, bccir, bcsaw, b
                             f"\nrsaw, rsqr, saw, semi, sin, sinh, sinr, skew, sqr, tetra, tan, tanh, wir"
                             f"\n"))
 
+MIN_ORDER = 1.0001
+
 if AlgorithmChosen not in SynthesisAlgorithm:
     print("Error type, 'Undefined_Algorithm'")
     quit()
 
+# Input for specific algorithm parameters
 if AlgorithmChosen == "pls":
     pulsewidth = float(input("Pulsewidth: "))
 
-if AlgorithmChosen in OrderedFunctions and AlgorithmChosen not in Alogsm:
+if AlgorithmChosen in OrderedFunctions or AlgorithmChosen in OrderedFourier:
     print("\nOrder may not be less than or equal to 1")
     mod_order = input("Enter Order... ")
 
     if mod_order.lower() == "u":
         order = 6.5737761766
-    elif float(mod_order) > 1:
-        order = float(mod_order)
-    elif -1 < float(mod_order) <= 1:
-        order = 1.0001
-        print("Order = 1+...")
-    elif float(mod_order) <= -1:
-        order = frequency
-        print(f"Order = {round(frequency, 4)}Hz")
     else:
-        print("Error type, Invalid_Input")
-        quit()
+        mod_order = float(mod_order)
+        if mod_order > 1:
+            order = mod_order
+        elif -1 < mod_order <= 1:
+            order = MIN_ORDER
+            print("Order adjusted to 1+...")
+        else:
+            order = frequency
+            print(f"Order = {round(frequency, 4)}Hz")
 elif AlgorithmChosen in Alogsm:
     order = 6.5737761766
-elif AlgorithmChosen in OrderedFourier:
-    print("\nOrder may not be less than or equal to 1")
-    mod_order = input("Enter Order... ")
-
-    if mod_order.lower() == "u":
-        order = 6.5737761766
-    elif float(mod_order) > 1:
-        order = float(mod_order)
-    elif -1 < float(mod_order) <= 1:
-        order = 1.0001
-        print("Order = 1+...")
-    elif float(mod_order) <= -1:
-        order = frequency
-        print(f"Order = {round(frequency, 4)}Hz")
-    else:
-        print("Error type, Invalid_Input")
-        quit()
 
 end = round(sampleTime * sampleLength)
+sample_data = []
 
 for i in range(end):
-    if AlgorithmChosen not in sinDenominator and AlgorithmChosen not in cosDenominator and AlgorithmChosen not in \
-            FourierOneFunctions and AlgorithmChosen not in FourierFunctions and AlgorithmChosen not in OrderedFourier \
-            and AlgorithmChosen not in OrderedFunctions and AlgorithmChosen not in ModularFunctions and \
-            AlgorithmChosen not in SemiCircle and AlgorithmChosen not in Alogsm:
-        sample_data.append(SynthesisAlgorithm[AlgorithmChosen](i * omega))
-        percent(i)
-    if AlgorithmChosen in cosDenominator:
-        if cos(omega) != 0:
-            sample_data.append(SynthesisAlgorithm[AlgorithmChosen](i * omega))
-            percent(i)
-        elif (i - (q / (4 * frequency))) % (q / 2 * frequency) == 0:
-            sample_data.append((SynthesisAlgorithm[AlgorithmChosen](i * omega - 1) + SynthesisAlgorithm[
-                AlgorithmChosen](i * omega + 1)) / 2)
-            percent(i)
-    elif AlgorithmChosen in sinDenominator:
-        if sin(i * omega) != 0:
-            sample_data.append(SynthesisAlgorithm[AlgorithmChosen](i * omega))
-            percent(i)
-        elif i % (q / (2 * frequency)) == 0:
-            sample_data.append((SynthesisAlgorithm[AlgorithmChosen](i * omega - 1) + SynthesisAlgorithm[
-                AlgorithmChosen](i * omega + 1)) / 2)
-            percent(i)
+    omega_i = i * omega
+
+    # Handling functions with sine denominator issues
+    if AlgorithmChosen in sinDenominator and sin(omega_i) == 0:
+        sample_data.append(
+            (SynthesisAlgorithm[AlgorithmChosen](omega_i - 1) + SynthesisAlgorithm[AlgorithmChosen](omega_i + 1)) / 2)
+    # Handling functions with cosine denominator issues
+    elif AlgorithmChosen in cosDenominator and cos(omega_i) == 0:
+        sample_data.append(
+            (SynthesisAlgorithm[AlgorithmChosen](omega_i - 1) + SynthesisAlgorithm[AlgorithmChosen](omega_i + 1)) / 2)
+    # Handling Fourier functions
     elif AlgorithmChosen in FourierFunctions:
-        sample_data.append(sum(SynthesisAlgorithm[AlgorithmChosen](i * omega, n) for n in range(resolution)))
-        percent(i)
+        sample_data.append(sum(SynthesisAlgorithm[AlgorithmChosen](omega_i, n) for n in range(resolution)))
+    # Handling Fourier functions starting from 1
     elif AlgorithmChosen in FourierOneFunctions:
-        sample_data.append(sum(SynthesisAlgorithm[AlgorithmChosen](i * omega, n) for n in range(1, resolution)))
-        percent(i)
+        sample_data.append(sum(SynthesisAlgorithm[AlgorithmChosen](omega_i, n) for n in range(1, resolution)))
+    # Handling ordered Fourier functions
+    elif AlgorithmChosen in OrderedFourier:
+        sample_data.append(sum(SynthesisAlgorithm[AlgorithmChosen](omega_i, n) for n in range(1, resolution)))
+    # Handling semi-circle functions
+    elif AlgorithmChosen in SemiCircle:
+        sample_data.append(semicircle(i / q))
+    # Handling the Modular Functions and the special case for the antilogarithm
     elif AlgorithmChosen in ModularFunctions:
         if AlgorithmChosen == antilogarithm:
             sample_data.append(SynthesisAlgorithm[AlgorithmChosen](i))
-            percent(i)
         else:
-            sample_data.append(SynthesisAlgorithm[AlgorithmChosen](i * omega))
-            percent(i)
-    elif AlgorithmChosen in Alogsm:
-        sample_data.append(SynthesisAlgorithm[AlgorithmChosen](i * omega))
-        percent(i)
-    elif AlgorithmChosen in SemiCircle:
-        sample_data.append(semicircle(i / q))
-        percent(i)
-    elif AlgorithmChosen in OrderedFourier:
-        sample_data.append(sum(SynthesisAlgorithm[AlgorithmChosen](i * omega, n) for n in range(1, resolution)))
+            sample_data.append(SynthesisAlgorithm[AlgorithmChosen](omega_i))
+    # For all other cases not specified above
+    else:
+        sample_data.append(SynthesisAlgorithm[AlgorithmChosen](omega_i))
+
+    # Print progress in percentages at intervals (adjust the interval if needed)
+    if i % 100 == 0:
         percent(i)
 
-normalized_data = []
-dataMax = max(sample_data)
-dataMin = min(sample_data)
-dataNormal = max(dataMax, abs(dataMin))
+# Normalize
+data_normal = max(max(sample_data), abs(min(sample_data)))
+if data_normal < 30:
+    sample_data = [z / data_normal for z in sample_data]
 
-if dataNormal >= 30:
-    normalized_data = sample_data
-else:
-    normalized_data = [z / dataNormal for z in sample_data]
+# Write to File
+file_path = os.path.join(folder_name, 'FunctionGenerator.txt')
+with open(file_path, 'w') as WS:
+    WS.write('\n'.join(str(d) for d in sample_data))
 
-with open(r'FunctionGenerator.txt', 'w') as WS:
-    print(f"\nWriting...")
-    for WSD in normalized_data:
-        WS.write("%s\n" % WSD)
-    print(f"{str(AlgorithmChosen)} Sample Data Written!")
-
-with wave.open(f"{AlgorithmChosen}.wav", "w") as WAVS:
-    print(f"Writing {str(AlgorithmChosen)}.wav...")
+wave_path = os.path.join(folder_name, f"{AlgorithmChosen}.wav")
+with wave.open(wave_path, "w") as WAVS:
     WAVS.setnchannels(1)
     WAVS.setsampwidth(2)
     WAVS.setframerate(q)
-    for i in range(len(normalized_data)):
-        percent(i)
-        wav_data = int(normalized_data[i] * ((2 ** 15) - 1))
-        WAVS.writeframes(struct.pack("<h", wav_data))
+    WAVS.writeframes(b''.join(struct.pack("<h", int(d * ((2 ** 15) - 1))) for d in sample_data))
 
-print(f"\n{str(AlgorithmChosen)}.wav Written!")
+print(f"\n{wave_path} Written!")
