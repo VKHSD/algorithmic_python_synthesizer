@@ -16,10 +16,8 @@ import numpy as np
 import wave
 import struct
 
-# Folder name
 folder_name = "GeneratedFunctions"
 
-# Check if folder exists. If not, create it.
 if not os.path.exists(folder_name):
     os.makedirs(folder_name)
 
@@ -36,6 +34,74 @@ omega = (2 * pi * frequency) / q
 sample_rate = round(q / frequency)
 sample_data = []
 
+overdrive = 1
+multiplier_808 = 3
+sweep = 50
+
+
+def find_note(n):
+
+    n = float(n)
+    note_level = int(n) // 12 - 1  
+    note = int(n) % 12
+
+    note_names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+    note_1 = note_names[note]
+
+    if n != int(n):
+        cents = round((n - int(n)) * 100)
+        note_1 = f"{note_1} + {cents} cents"
+
+    return note_1, note_level
+
+
+class RandomWalk:
+    def __init__(self, step_size=0.01, sample_rate=q, cutoff=20):
+        self.step_size = step_size
+        self.current_value = 0
+        self.prev_input = 0
+        self.prev_output = 0
+        self.sample_rate = sample_rate
+
+        RC = 1.0 / (2 * pi * cutoff)
+        T = 1.0 / self.sample_rate
+        self.alpha = RC / (RC + T)
+
+    def next(self):
+        """Generate the next value using a random walk and apply high-pass filtering."""
+        self.current_value += random.uniform(-self.step_size, self.step_size)
+        self.current_value = max(min(self.current_value, 1), -1)
+
+        output = self.alpha * (self.prev_output + self.current_value - self.prev_input)
+        self.prev_input = self.current_value
+        self.prev_output = output
+
+        return output
+
+
+rw = RandomWalk()
+
+
+class BandpassFilter:
+    def __init__(self, f_center, bw, samplerate):
+        self.samplerate = samplerate
+        self.omega = 2 * np.pi * f_center / samplerate
+        self.alpha = np.sin(self.omega) * np.sinh(np.log(2) / 2 * bw * self.omega / np.sin(self.omega))
+        self.a0 = 1 + self.alpha
+        self.b0 = self.alpha
+        self.b1 = 0
+        self.b2 = -self.alpha
+        self.a1 = -2 * np.cos(self.omega)
+        self.a2 = 1 - self.alpha
+        self.x1 = self.x2 = self.y1 = self.y2 = 0
+
+    def process(self, x):
+        y = (self.b0 / self.a0) * x + (self.b1 / self.a0) * self.x1 + (self.b2 / self.a0) * self.x2 \
+            - (self.a1 / self.a0) * self.y1 - (self.a2 / self.a0) * self.y2
+        self.x2, self.x1 = self.x1, x
+        self.y2, self.y1 = self.y1, y
+        return y
+        
 
 def handle_zero_division(func):
     """
@@ -48,7 +114,7 @@ def handle_zero_division(func):
         try:
             return func(t, *args, **kwargs)
         except ZeroDivisionError:
-            return func(t + 1, *args, **kwargs)  # here, we're taking t+1 as the next best value
+            return func(t + 1, *args, **kwargs)  
 
     return wrapper
 
@@ -361,6 +427,158 @@ def sineroot(t):
         return (abs_sine / sin(t)) * (abs_sine ** sineroot_exponent)
 
 
+# For storing anchor points, so we don't regenerate them every time
+ANCHORS = {}
+
+
+def smoothstep(t):
+    """Smoothstep is a smooth curve between 0 and 1, useful for interpolation."""
+    return t * t * (3 - 2 * t)
+
+
+def lerp(a, b, t):
+    """Linear interpolation between a and b using factor t."""
+    return a + t * (b - a)
+
+
+def weighted_noise(i):
+    global ANCHORS
+
+    interval = 10  
+
+    left_anchor_idx = (i // interval) * interval
+    right_anchor_idx = left_anchor_idx + interval
+
+    if left_anchor_idx not in ANCHORS:
+        ANCHORS[left_anchor_idx] = random.uniform(-1, 1)
+    if right_anchor_idx not in ANCHORS:
+        ANCHORS[right_anchor_idx] = random.uniform(-1, 1)
+
+    t = (i - left_anchor_idx) / interval
+
+    value = lerp(ANCHORS[left_anchor_idx], ANCHORS[right_anchor_idx], smoothstep(t))
+
+    return value
+
+
+@handle_zero_division
+def tr808_kick(t):
+    alpha = max(order, .1)
+    beta = sweep
+    f_s = multiplier_808 * frequency
+    f_e = frequency
+    s_t = euler ** (-alpha * t / q) * (erf(max(euler ** (-alpha * 2 * t / q) * overdrive, 1) * (
+        sin(2 * pi * (f_s * euler ** (-beta * t / q) + f_e) * t / q))))
+    return s_t + (euler ** (-alpha * t / q) * (rw.next()) / (beta / multiplier_808))
+
+
+def shift_register_oscillator(t, length=6):
+    """A simple six-stage shift register oscillator for pseudo-random sequence generation."""
+    
+    seed = int(t) % (2 ** length - 1)
+    seed = seed if seed != 0 else 1
+
+    for _ in range(length):
+        bit = ((seed >> 5) ^ (seed >> 4)) & 1
+        seed = ((seed << 1) | bit) & (2 ** length - 1)
+
+    return 1 if seed & 1 else -1
+
+
+def mix_oscillators(t):
+    """Mix multiple oscillators for a more metallic noise."""
+    sum_osc = 0
+    for i in range(6):
+        sum_osc += shift_register_oscillator(t + i)
+    return sum_osc / 6
+
+
+def tr808_hihat(t):
+    alpha = max(order, .1)
+    f_center = multiplier_808 * frequency * 6.7
+    bw = mod_order
+
+    noise = mix_oscillators(t) + random.randrange(-1, 1)
+
+    envelope = np.exp(-alpha * t / q)
+
+    bp_filter = BandpassFilter(f_center, bw=bw, samplerate=q)
+    s_t = envelope * bp_filter.process(noise)
+
+    s_t = s_t * overdrive if abs(s_t) <= 1 else np.sign(s_t) * overdrive
+
+    return s_t
+
+
+@handle_zero_division
+def attractor(t, iterations=100):
+    x = math.sin(t * 20 / q)  
+    for _ in range(iterations):
+        x = 2 * order * (0.5 * (x + 1)) * (1 - 0.5 * (x + 1)) - 1
+
+    return x * math.sin(t)
+
+
+@handle_zero_division
+def arch(t):
+    rec_2_pi = 2 / pi
+    o = 13.5
+    p = 1.6
+    w = t + 2.0346916
+    s_t = rec_2_pi * arcsin(sin(w + o * sin(w) + p))
+    return s_t
+
+
+wavetable_pcirf = []
+for i in range(q):
+    t = 2 * pi * i / q  
+    x = t + sin(t)
+    y = cos(t)
+    wavetable_pcirf.append(y + x)  
+
+wavetable_pcir = []
+for i in range(int(0*sampleTime*q+q)):
+    t = 2 * pi * i / q
+    x = t + sin(1*t)
+    y = cos(t)
+    wavetable_pcir.append((x, y))
+
+max_x = (2 * pi + 1)*sampleTime  
+sorted_wavetable = sorted(wavetable_pcir, key=lambda coord: coord[0])
+x_values = [coord[0] for coord in sorted_wavetable]
+
+
+def paracirfalse(t):
+    index = int((t / (2 * pi)) * q) % q  
+    return wavetable_pcirf[index]
+
+
+def paracir(t):
+    t = t % max_x  
+
+    index = bisect_left(x_values, t)
+
+    if index == 0:
+        closest_coord = sorted_wavetable[0]
+    elif index == len(sorted_wavetable):
+        closest_coord = sorted_wavetable[-1]
+    else:
+        before = sorted_wavetable[index - 1]
+        after = sorted_wavetable[index]
+        closest_coord = before if (t - before[0]) <= (after[0] - t) else after
+
+    return closest_coord[1]  # Return the corresponding y value
+
+
+@handle_zero_division
+def natural_quadratic(t):
+    p = 1
+
+    w = (2 * (frequency/q) * ((t/(omega)) % (1 / (frequency/q))) - p)
+
+    return (euler * w / 2) * math.log(w ** 2)
+
+
 # where all algorithms are stored
 SynthesisAlgorithm = {
     "atr": antitriangle,
@@ -403,6 +621,14 @@ SynthesisAlgorithm = {
     "sinh": hyperbolic_sin,
     "tanh": hyperbolic_tan,
     "sinr": sineroot,
+    "808": tr808_kick,
+    "hh": tr808_hihat,
+    "att": attractor,
+    "arch": arch,
+    "wnze": weighted_noise,
+    "pcirf": paracirfalse,
+    "pcir": paracir,
+    "nquad": natural_quadratic,
 }
 # where algorithms that divide by sine are stored unless parsed otherwise
 sinDenominator = {
@@ -461,6 +687,7 @@ OrderedFunctions = {
     "sinh": hyperbolic_sin,
     "tanh": hyperbolic_tan,
     "sinr": sineroot,
+    "att": attractor,
 }
 # where algorithms that have an order modulator and that are NOT fourier functions
 ModularFunctions = {
@@ -483,6 +710,10 @@ ModularFunctions = {
 Alogsm = {
     "alogsm": antilogarithmsmooth,
 }
+TR808 = {
+    "808": tr808_kick,
+    "hh": tr808_hihat,
+}
 # where all groups are placed
 OtherGroups = (
     sinDenominator,
@@ -494,6 +725,7 @@ OtherGroups = (
     ModularFunctions,
     SemiCircle,
     Alogsm,
+    TR808,
 )
 
 AlgorithmChosen = str(input(f"\nalog, alogsm, angle, atr, bcatr, bccir, bcsaw, bcsin, bctri, cir, clx, decr, "
@@ -530,7 +762,34 @@ if AlgorithmChosen in OrderedFunctions or AlgorithmChosen in OrderedFourier:
 elif AlgorithmChosen in Alogsm:
     order = 6.5737761766
 
-end = round(sampleTime * sampleLength)
+if AlgorithmChosen in TR808:
+    print("Press Enter to use default values, or provide your own.")
+    overdrive_input = input("Overdrive [default=1]: ")
+    if not overdrive_input.strip():  # checks if it's empty or just whitespace
+        overdrive = 1.0
+    else:
+        overdrive = float(overdrive_input)
+    mod_order_input = input("Order [default=0.1]: ")
+    if not mod_order_input.strip():
+        mod_order = 0.1
+    else:
+        mod_order = float(mod_order_input)
+    order = mod_order
+    sweep_input = input("Sweep speed [default=50]: ")
+    if not sweep_input.strip():
+        sweep = 50.0
+    else:
+        sweep = float(sweep_input)
+    multiplier_808_input = input("808 starting frequency [default=3X]: ")
+    if not multiplier_808_input.strip():
+        multiplier_808 = 3.0
+    else:
+        multiplier_808 = float(multiplier_808_input)
+    end = ceil(-q * math.log(0.001) / mod_order)
+
+if AlgorithmChosen not in TR808:
+    end = round(sampleTime * sampleLength)
+
 sample_data = []
 
 for i in range(end):
@@ -563,6 +822,8 @@ for i in range(end):
         else:
             sample_data.append(SynthesisAlgorithm[AlgorithmChosen](omega_i))
     # For all other cases not specified above
+    elif AlgorithmChosen in TR808:
+        sample_data.append(SynthesisAlgorithm[AlgorithmChosen](i))
     else:
         sample_data.append(SynthesisAlgorithm[AlgorithmChosen](omega_i))
 
